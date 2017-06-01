@@ -2,6 +2,7 @@ package org.xyc.elasticsearch.api.operation;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.Lists;
 import org.elasticsearch.action.bulk.BulkItemResponse;
@@ -11,6 +12,7 @@ import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 
+import org.elasticsearch.action.update.UpdateResponse;
 import org.xyc.elasticsearch.api.BaseField;
 import org.xyc.elasticsearch.api.ClientInstance;
 import org.xyc.elasticsearch.api.JsonUtils;
@@ -122,6 +124,52 @@ public class CrudOperation {
             elements.add(new AddElement(record.getId(), JsonUtils.toString(record)));
         }
         return addObjectForElement(elements);
+    }
+
+    /**
+     * update something
+     * @param obj
+     * @param <T>
+     * @return
+     */
+    public <T extends BaseField> boolean updateObject(T obj) {
+        UpdateResponse response = ClientInstance.getClient().prepareUpdate(index, type, obj.getId())
+                .setDoc(JsonUtils.toString(obj))
+                .get();
+        if (response.isCreated())
+            return true;
+        return false;
+    }
+
+    /**
+     * update something
+     * @param id
+     * @param map
+     * @return
+     */
+    public boolean updateObject(String id, Map<String, Object> map) {
+        UpdateResponse response = ClientInstance.getClient().prepareUpdate(index, type, id)
+                .setDoc(map)
+                .get();
+        if (response.isCreated())
+            return true;
+        return false;
+    }
+
+    /**
+     * update single field
+     * @param id
+     * @param field
+     * @param value
+     * @return
+     */
+    public boolean updateObject(String id, String field, Object value) {
+        UpdateResponse response = ClientInstance.getClient().prepareUpdate(index, type, id)
+                .setDoc(field, value)
+                .get();
+        if (response.isCreated())
+            return true;
+        return false;
     }
 
     private class AddElement {
